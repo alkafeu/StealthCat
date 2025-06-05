@@ -1,0 +1,45 @@
+[package]
+name = "stealthcat-backend"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+actix-web = "4.4"
+actix-cors = "0.6"
+tokio = { version = "1.0", features = ["full"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+serde_yaml = "0.9"
+reqwest = { version = "0.11", features = ["json"] }
+uuid = { version = "1.0", features = ["v4"] }
+chrono = { version = "0.4", features = ["serde"] }
+actix-web-actors = "4.2"
+actix = "0.13"
+log = "0.4"
+env_logger = "0.10"
+tokio-tungstenite = "0.20"
+futures-util = "0.3"
+clap = { version = "4.0", features = ["derive"] }
+# Зависимости для базы данных (без offline feature)
+sqlx = { version = "0.7", features = ["runtime-tokio-rustls", "sqlite", "chrono", "uuid"] }
+anyhow = "1.0"
+thiserror = "1.0"
+
+# V2Ray и криптографические зависимости
+base64 = "0.21"
+url = "2.4"
+regex = "1.10"
+rand = "0.8"
+sha2 = "0.10"
+hmac = "0.12"
+aes = "0.8"
+ring = "0.17"
+tokio-rustls = "0.24"
+rustls = "0.21"
+rustls-pemfile = "1.0"
+webpki-roots = "0.25"
+
+# Для парсинга подписок
+quick-xml = "0.31"
+toml = "0.8"
+urlencoding = "2.1"

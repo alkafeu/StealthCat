@@ -1,0 +1,280 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Light theme colors */
+  --color-light-primary: #FFE4E1;
+  --color-light-secondary: #98FF98;
+  --color-light-accent: #E6E6FA;
+  
+  /* Dark theme colors */
+  --color-dark-primary: #1A1B2E;
+  --color-dark-secondary: #4A4E69;
+  --color-dark-accent: #9A8C98;
+  
+  /* Accent color variables (устанавливаются динамически) */
+  --accent-50: #eff6ff;
+  --accent-100: #dbeafe;
+  --accent-200: #bfdbfe;
+  --accent-300: #93c5fd;
+  --accent-400: #60a5fa;
+  --accent-500: #3b82f6;
+  --accent-600: #2563eb;
+  --accent-700: #1d4ed8;
+  --accent-800: #1e40af;
+  --accent-900: #1e3a8a;
+}
+
+/* Кастомные классы для акцентных цветов */
+.bg-accent {
+  background-color: var(--accent-500);
+}
+
+.bg-accent:hover {
+  background-color: var(--accent-600);
+}
+
+.bg-accent:active {
+  background-color: var(--accent-700);
+}
+
+.text-accent {
+  color: var(--accent-500);
+}
+
+.border-accent {
+  border-color: var(--accent-500);
+}
+
+.ring-accent {
+  --tw-ring-color: var(--accent-500);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  height: 100%;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+.dark ::-webkit-scrollbar-track {
+  background: #374151;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #6b7280;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+/* Focus styles */
+.focus-visible:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Animation utilities */
+.animate-pulse-slow {
+  animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: .5;
+  }
+}
+
+/* Custom gradient backgrounds */
+.gradient-bg {
+  background: linear-gradient(135deg, var(--color-light-primary) 0%, var(--color-light-secondary) 100%);
+}
+
+.dark .gradient-bg {
+  background: linear-gradient(135deg, var(--color-dark-primary) 0%, var(--color-dark-secondary) 100%);
+}
+
+/* Card hover effects */
+.card-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.dark .card-hover:hover {
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+}
+
+/* Loading spinner */
+.spinner {
+  border: 2px solid #f3f3f3;
+  border-top: 2px solid #3498db;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .card-hover {
+    border: 2px solid currentColor;
+  }
+  
+  button {
+    border: 2px solid currentColor;
+  }
+}
+
+/* Print styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}
+
+/* Добавить к существующим классам */
+
+/* Акцентные цвета с прозрачностью */
+.bg-accent\/10 {
+  background-color: color-mix(in srgb, var(--accent-500) 12%, transparent);
+}
+
+.bg-accent\/15 {
+  background-color: color-mix(in srgb, var(--accent-500) 18%, transparent);
+}
+
+.bg-accent\/20 {
+  background-color: color-mix(in srgb, var(--accent-500) 25%, transparent);
+}
+
+.text-accent {
+  color: var(--accent-700);
+}
+
+.border-accent {
+  border-color: var(--accent-500);
+}
+
+/* Стили для активной вкладки в светлой теме */
+.sidebar-item-active {
+  background-color: rgba(59, 130, 246, 0.15) !important;
+  color: var(--accent-800) !important;
+  border-right: 4px solid var(--accent-600) !important;
+  font-weight: 600 !important;
+}
+
+/* Иконка в светлой теме - темный цвет */
+.sidebar-item-active .w-5 {
+  color: var(--accent-800) !important;
+}
+
+.sidebar-item-hover:hover {
+  background-color: rgba(0, 0, 0, 0.08);
+  color: #374151;
+}
+
+/* Темная тема для акцентных цветов */
+.dark .text-accent {
+  color: var(--accent-300);
+}
+
+.dark .bg-accent\/10 {
+  background-color: rgba(59, 130, 246, 0.2);
+}
+
+.dark .bg-accent\/15 {
+  background-color: rgba(59, 130, 246, 0.25);
+}
+
+.dark .bg-accent\/20 {
+  background-color: rgba(59, 130, 246, 0.3);
+}
+
+/* Стили для активной вкладки в темной теме */
+.dark .sidebar-item-active {
+  background-color: color-mix(in srgb, var(--accent-500) 30%, transparent) !important;
+  color: #ffffff !important;
+  border-right: 4px solid var(--accent-400) !important;
+  font-weight: 600 !important;
+}
+
+.dark .bg-accent\/10 {
+  background-color: color-mix(in srgb, var(--accent-500) 15%, transparent);
+}
+
+.dark .bg-accent\/15 {
+  background-color: color-mix(in srgb, var(--accent-500) 20%, transparent);
+}
+
+.dark .bg-accent\/20 {
+  background-color: color-mix(in srgb, var(--accent-500) 25%, transparent);
+}
+
+/* Иконка в темной теме - белый цвет */
+.dark .sidebar-item-active .w-5 {
+  color: #ffffff !important;
+}
+
+.dark .sidebar-item-hover:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #f3f4f6;
+}

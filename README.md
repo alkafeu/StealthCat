@@ -34,27 +34,27 @@
 ### Установка и запуск
 
 1. **Клонирование репозитория**
-
+```powershell
 git clone https://github.com/alkafeu/StealthCat.git
 cd StealthCat
-
+```
 2. **Запуск Backend**
-
+```powershell
 cd backend
 cargo build
 cargo run
-
+```
 3. **Запуск Frontend (в новом терминале)**
-
+```powershell
 cd frontend
 npm install
 npm start
-
+```
 4. **Запуск Electron (в третьем терминале)**
-
+```powershell
 cd frontend
 npm run electron-dev
-
+```
 ### Доступ к приложению
 - **Веб-интерфейс**: http://localhost:3000
 - **API**: http://localhost:8080
@@ -124,19 +124,19 @@ StealthCat/
 ### Команды для разработки
 
 **Backend тестирование**
-
+```powershell
 cd backend
 cargo test
 cargo clippy
-
+```
 **Frontend разработка**
-
+```powershell
 cd frontend
 npm test
 npm run build
-
+```
 **API тестирование**
-
+```powershell
 # Получить список серверов
 curl http://localhost:8080/api/servers
 
@@ -145,7 +145,7 @@ curl http://localhost:8080/api/logs
 
 # Получить правила
 curl http://localhost:8080/api/rules
-
+```
 ## 📋 Roadmap
 
 ### v0.1.0 (Текущая версия)
@@ -186,7 +186,7 @@ curl http://localhost:8080/api/rules
 
 - 📧 **Email**: support@stealthcat.dev
 - 💬 **Telegram**: @stealthcat_support
-- 🐙 **GitHub Issues**: [Создать issue](https://github.com/your-username/StealthCat/issues)
+- 🐙 **GitHub Issues**: [Создать issue](https://github.com/alkafeu/StealthCat/issues)
 
 ---
 

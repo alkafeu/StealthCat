@@ -4,7 +4,7 @@ use std::sync::Arc;
 use tokio::sync::RwLock;
 use crate::models::*;
 use crate::subscription::SubscriptionParser;
-use crate::models::{Subscription, ProxyServerV2};
+use crate::models::Subscription; // Удаляем ProxyServerV2
 use crate::database::Database; // Добавить эту строку
 
 pub async fn get_status(
@@ -195,7 +195,7 @@ pub async fn create_rule(
     db: web::Data<Arc<Database>>,
 ) -> Result<HttpResponse> {
     let rule = Rule {
-        id: 0, // Будет установлен автоматически
+        id: "0".to_string(), // Будет установлен автоматически
         name: payload.get("name")
             .and_then(|v| v.as_str())
             .unwrap_or("Unnamed Rule")
@@ -212,6 +212,9 @@ pub async fn create_rule(
             .and_then(|v| v.as_str())
             .unwrap_or("proxy")
             .to_string(),
+        priority: payload.get("priority")
+            .and_then(|v| v.as_i64())
+            .unwrap_or(1) as i32,
         enabled: payload.get("enabled")
             .and_then(|v| v.as_bool())
             .unwrap_or(true),
@@ -241,7 +244,7 @@ pub async fn create_rule(
 
 pub async fn update_rule(
     db: web::Data<Arc<Database>>,
-    path: web::Path<u32>,
+    path: web::Path<String>, // Изменяем с u32 на String
     rule_data: web::Json<Rule>,
 ) -> Result<HttpResponse> {
     let rule_id = path.into_inner();
@@ -271,12 +274,12 @@ pub async fn update_rule(
 }
 
 pub async fn delete_rule(
-    db: web::Data<Arc<Database>>,
-    path: web::Path<u32>,
+    db: web::Data<Arc<Database>>, // Убираем подчеркивание
+    path: web::Path<String>,
 ) -> Result<HttpResponse> {
     let rule_id = path.into_inner();
     
-    match db.delete_rule(rule_id).await {
+    match db.delete_rule(&rule_id).await { // Передаем ссылку на String
         Ok(_) => {
             let response = ApiResponse {
                 success: true,
@@ -484,7 +487,7 @@ pub async fn delete_subscription(
 // Тестирование скорости сервера
 pub async fn test_server_speed(
     path: web::Path<String>,
-    db: web::Data<Arc<Database>>,
+    _db: web::Data<Arc<Database>>, // Добавляем подчеркивание перед именем
 ) -> Result<HttpResponse, actix_web::Error> {
     let server_id = path.into_inner();
     

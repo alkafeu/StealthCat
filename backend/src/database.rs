@@ -1,6 +1,6 @@
 use sqlx::{Pool, Sqlite, SqlitePool, Row};
 use anyhow::Result;
-use chrono::{DateTime, Utc};
+use chrono::NaiveDateTime;
 use crate::models::{LogEntry, ProxyServer, Rule, LogLevel};
 use crate::models::{Subscription, ProxyServerV2};
 
@@ -151,13 +151,13 @@ impl Database {
         let rules = rows
             .into_iter()
             .map(|row| {
-                let id_str: String = row.get("id");
                 Rule {
-                    id: id_str.parse().unwrap_or(0), // парсим String в u32
-                    name: String::new(), // поле name отсутствует в БД, используем пустую строку
+                    id: row.get("id"), // Убираем парсинг, оставляем как String
+                    name: row.get("name"), // Теперь поле name есть в БД
                     rule_type: row.get("rule_type"),
                     pattern: row.get("pattern"),
                     action: row.get("action"),
+                    priority: row.get("priority"), // Добавляем priority
                     enabled: row.get::<i64, _>("enabled") != 0,
                 }
             })
@@ -407,30 +407,30 @@ impl Database {
     }
 }
 
-pub async fn update_rule(&self, rule: &Rule) -> Result<()> {
-    sqlx::query(
-        r#"
-        UPDATE rules 
-        SET rule_type = ?, pattern = ?, action = ?, enabled = ?
-        WHERE id = ?
-        "#,
-    )
-    .bind(&rule.rule_type)
-    .bind(&rule.pattern)
-    .bind(&rule.action)
-    .bind(rule.enabled)
-    .bind(rule.id.to_string())
-    .execute(&self.pool)
-    .await?;
-    
-    Ok(())
-}
-
-pub async fn delete_rule(&self, rule_id: u32) -> Result<()> {
-    sqlx::query("DELETE FROM rules WHERE id = ?")
-        .bind(rule_id.to_string())
+impl Database {
+    pub async fn update_rule(&self, rule: &Rule) -> Result<()> {
+        sqlx::query(
+            "UPDATE rules SET name = ?, rule_type = ?, pattern = ?, action = ?, priority = ?, enabled = ? WHERE id = ?"
+        )
+        .bind(&rule.name)
+        .bind(&rule.rule_type)
+        .bind(&rule.pattern)
+        .bind(&rule.action)
+        .bind(rule.priority)
+        .bind(rule.enabled)
+        .bind(&rule.id) // Используем ссылку вместо владения
         .execute(&self.pool)
         .await?;
+        
+        Ok(())
+    }
     
-    Ok(())
+    pub async fn delete_rule(&self, rule_id: &str) -> Result<()> { // Изменяем параметр на &str
+        sqlx::query("DELETE FROM rules WHERE id = ?")
+            .bind(rule_id)
+            .execute(&self.pool)
+            .await?;
+        
+        Ok(())
+    }
 }

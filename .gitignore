@@ -32,6 +32,9 @@ pnpm-lock.yaml
 *.sqlite
 *.sqlite3
 stealthcat.db
+# SQLite WAL & SHM файлы
+*.db-shm
+*.db-wal
 
 # Logs
 logs/
@@ -137,6 +140,13 @@ coverage.xml
 # Electron
 electron-builder.yml
 electron-builder.json
+
+# Rust specific
+.cargo/
+.rustup/
+
+# SQLx
+.sqlx/
 
 # Miscellaneous
 .git/

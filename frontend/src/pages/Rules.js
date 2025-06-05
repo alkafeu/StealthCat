@@ -178,7 +178,6 @@ const Rules = () => {
             Управление правилами маршрутизации трафика
           </p>
         </div>
-        // Заменить все bg-blue-500 на bg-accent
         <button
           onClick={() => setShowModal(true)}
           className="bg-accent hover:bg-accent text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"

@@ -1,4 +1,4 @@
-use crate::models::*;
+use crate::models::{ProxyServerV2, VlessConfig, VmessConfig, ProxyConfig, ProxyProtocol}; // Удаляем Subscription
 use anyhow::{Result, anyhow};
 use base64::{Engine as _, engine::general_purpose};
 use regex::Regex;

@@ -57,19 +57,21 @@ impl AppState {
             },
             rules: vec![
                 Rule {
-                    id: 1,
+                    id: "1".to_string(),  // Изменяем на String
                     name: "Блокировка рекламы".to_string(),
                     rule_type: "domain".to_string(),
                     pattern: "*.ads.google.com".to_string(),
                     action: "block".to_string(),
+                    priority: 1,  // Добавляем priority
                     enabled: true,
                 },
                 Rule {
-                    id: 2,
+                    id: "2".to_string(),  // Изменяем на String
                     name: "Прямое соединение для локальных сайтов".to_string(),
                     rule_type: "domain".to_string(),
                     pattern: "*.local".to_string(),
                     action: "direct".to_string(),
+                    priority: 2,  // Добавляем priority
                     enabled: true,
                 },
             ],
@@ -164,11 +166,12 @@ pub struct ApiError {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Rule {
-    pub id: u32,
-    pub name: String,
+    pub id: String,
+    pub name: String,      // Добавляем отсутствующее поле name
     pub rule_type: String,
     pub pattern: String,
     pub action: String,
+    pub priority: i32,
     pub enabled: bool,
 }
 

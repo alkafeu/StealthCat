@@ -598,21 +598,27 @@ pub async fn create_server(
 pub async fn update_server(
     db: web::Data<Arc<Database>>,
     path: web::Path<String>,
-    server_data: web::Json<UpdateProxyServer>,
+    server_data: web::Json<UpdateProxyServerV2>,  // ✅ Изменено на V2
 ) -> Result<HttpResponse> {
     let server_id = path.into_inner();
     let update_data = server_data.into_inner();
     
-    // Создаем полную структуру ProxyServer с ID из URL
-    let server = ProxyServer {
+    // Создаем полную структуру ProxyServerV2 с ID из URL
+    let server = ProxyServerV2 {
         id: server_id,
         name: update_data.name,
         hostname: update_data.hostname,
         port: update_data.port,
         protocol: update_data.protocol,
+        config: update_data.config,
         latency_ms: update_data.latency_ms,
-        last_ping: update_data.last_ping,
+        last_ping: update_data.last_ping.map(|s| chrono::DateTime::parse_from_rfc3339(&s).unwrap().with_timezone(&chrono::Utc)),
         active: update_data.active,
+        country: update_data.country,
+        city: update_data.city,
+        upload_speed: update_data.upload_speed,
+        download_speed: update_data.download_speed,
+        subscription_id: update_data.subscription_id,
     };
 
     match db.update_server(&server).await {

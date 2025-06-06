@@ -269,3 +269,20 @@ pub struct Subscription {
     pub active: bool,
     pub user_agent: Option<String>,
 }
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct UpdateProxyServerV2 {
+    pub name: String,
+    pub hostname: String,
+    pub port: u16,
+    pub protocol: ProxyProtocol,
+    pub config: ProxyConfig,
+    pub latency_ms: Option<u32>,
+    pub last_ping: Option<String>,
+    pub active: bool,
+    pub country: Option<String>,
+    pub city: Option<String>,
+    pub upload_speed: Option<u64>,
+    pub download_speed: Option<u64>,
+    pub subscription_id: Option<String>,
+}

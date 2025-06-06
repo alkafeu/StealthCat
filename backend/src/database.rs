@@ -273,6 +273,9 @@ impl Database {
     // Методы для работы с ProxyServerV2
     pub async fn insert_server_v2(&self, server: &ProxyServerV2) -> Result<()> {
         // Создаем базовую конфигурацию на основе протокола
+        // В функции update_server (строки 464-468) уже исправлены
+        
+        // Нужно исправить в другом месте (строки 277-300):
         let config = match server.protocol {
             crate::models::ProxyProtocol::HTTP => crate::models::ProxyConfig::Http,
             crate::models::ProxyProtocol::HTTPS => crate::models::ProxyConfig::Https,
@@ -458,16 +461,32 @@ impl Database {
         Ok(())
     }
 
-    pub async fn update_server(&self, server: &ProxyServer) -> Result<()> {
+    pub async fn update_server(&self, server: &ProxyServerV2) -> Result<()> {
+        let config_json = serde_json::to_string(&server.config)?;
+        let protocol_str = match server.protocol {
+            crate::models::ProxyProtocol::HTTP => "HTTP",        // ✅ Исправлено: Http -> HTTP
+            crate::models::ProxyProtocol::HTTPS => "HTTPS",      // ✅ Исправлено: Https -> HTTPS
+            crate::models::ProxyProtocol::SOCKS5 => "SOCKS5",    // ✅ Исправлено: Socks5 -> SOCKS5
+            crate::models::ProxyProtocol::VLESS => "VLESS",      // ✅ Исправлено: Vless -> VLESS
+            crate::models::ProxyProtocol::VMess => "VMess",      // ✅ Исправлено: Vmess -> VMess
+            crate::models::ProxyProtocol::Trojan => "Trojan",
+            crate::models::ProxyProtocol::Shadowsocks => "Shadowsocks",
+        };
+        
         sqlx::query(
-            "UPDATE servers_v2 SET name = ?, hostname = ?, port = ?, protocol = ?, latency = ?, active = ? WHERE id = ?"
+            "UPDATE servers_v2 SET name = ?, hostname = ?, port = ?, protocol = ?, config = ?, latency = ?, active = ?, country = ?, city = ?, upload_speed = ?, download_speed = ? WHERE id = ?"
         )
         .bind(&server.name)
         .bind(&server.hostname)
-        .bind(server.port)
-        .bind(&server.protocol)
+        .bind(server.port as i32)
+        .bind(protocol_str)
+        .bind(&config_json)
         .bind(server.latency_ms.map(|l| l as i32))
         .bind(server.active)
+        .bind(&server.country)
+        .bind(&server.city)
+        .bind(server.upload_speed.map(|s| s as i64))
+        .bind(server.download_speed.map(|s| s as i64))
         .bind(&server.id)
         .execute(&self.pool)
         .await?;
@@ -476,7 +495,7 @@ impl Database {
     }
 
     pub async fn delete_server(&self, server_id: &str) -> Result<()> {
-        sqlx::query("DELETE FROM servers WHERE id = ?")
+        sqlx::query("DELETE FROM servers_v2 WHERE id = ?")  // ✅ Исправлено: servers_v2
             .bind(server_id)
             .execute(&self.pool)
             .await?;

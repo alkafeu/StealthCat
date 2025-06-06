@@ -72,7 +72,11 @@ async fn main() -> Result<()> {
                     .route("/subscriptions/{id}", web::put().to(api::update_subscription))
                     .route("/subscriptions/{id}", web::delete().to(api::delete_subscription))
                     .route("/subscriptions/{id}/update", web::post().to(api::update_subscription_servers))
+                    // ✅ ДОБАВИТЬ ЭТИ МАРШРУТЫ:
                     .route("/servers-v2", web::get().to(api::get_servers_v2))
+                    .route("/servers-v2", web::post().to(api::create_server))     // ← ИСПРАВИТЬ: использовать create_server
+                    .route("/servers-v2/{id}", web::put().to(api::update_server))    // ← ДОБАВИТЬ
+                    .route("/servers-v2/{id}", web::delete().to(api::delete_server)) // ← ДОБАВИТЬ
                     .route("/servers-v2/{id}/test", web::post().to(api::test_server_speed))
                     .route("/select-server", web::post().to(api::select_server))
             )

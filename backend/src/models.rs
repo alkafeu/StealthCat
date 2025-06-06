@@ -114,6 +114,18 @@ pub struct ProxyServer {
     pub active: bool,
 }
 
+// Новая структура для обновления сервера (без поля id)
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct UpdateProxyServer {
+    pub name: String,
+    pub hostname: String,
+    pub port: u16,
+    pub protocol: String,
+    pub latency_ms: Option<u32>,
+    pub last_ping: Option<DateTime<Utc>>,
+    pub active: bool,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TrafficStats {
     pub bytes_up: u64,

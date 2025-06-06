@@ -61,6 +61,10 @@ async fn main() -> Result<()> {
                     .route("/rules", web::post().to(api::create_rule))
                     .route("/rules/{id}", web::put().to(api::update_rule))
                     .route("/rules/{id}", web::delete().to(api::delete_rule))
+                    // Маршруты для серверов
+                    .route("/servers", web::post().to(api::create_server))
+                    .route("/servers/{id}", web::put().to(api::update_server))
+                    .route("/servers/{id}", web::delete().to(api::delete_server))
                     // Новые маршруты для подписок
                     .route("/subscriptions", web::get().to(api::get_subscriptions))
                     .route("/subscriptions", web::post().to(api::create_subscription))

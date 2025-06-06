@@ -4,8 +4,10 @@ use std::sync::Arc;
 use tokio::sync::RwLock;
 use crate::models::*;
 use crate::subscription::SubscriptionParser;
-use crate::models::Subscription; // Удаляем ProxyServerV2
-use crate::database::Database; // Добавить эту строку
+use crate::models::Subscription;
+use crate::database::Database;
+use crate::models::{ProxyServerV2, ProxyProtocol, ProxyConfig};
+use uuid;
 
 pub async fn get_status(
     data: web::Data<Arc<RwLock<AppState>>>,
@@ -42,7 +44,7 @@ pub async fn get_stats(
     Ok(HttpResponse::Ok().json(response))
 }
 
-// ❌ УДАЛИТЬ ЭТУ ФУНКЦИЮ (строки 42-50)
+// ❌ УДАЛИТЬ МЕТОД (строки 42-50)
 // pub async fn get_servers(
 //     data: web::Data<Arc<RwLock<AppState>>>,
 // ) -> Result<HttpResponse> {
@@ -114,7 +116,7 @@ pub async fn update_config(
 pub async fn get_servers(
     db: web::Data<Arc<Database>>,
 ) -> Result<HttpResponse> {
-    match db.get_servers().await {
+    match db.get_servers_v2().await { // Используем get_servers_v2
         Ok(servers) => {
             let response = ApiResponse {
                 success: true,
@@ -537,6 +539,117 @@ pub async fn update_subscription(
             error: Some(ApiError {
                 code: 500,
                 message: format!("Failed to update subscription: {}", e),
+            }),
+        })),
+    }
+}
+
+pub async fn create_server(
+    payload: web::Json<UpdateProxyServer>, // Изменяем на UpdateProxyServer
+    db: web::Data<Arc<Database>>,
+) -> Result<HttpResponse> {
+    let update_data = payload.into_inner();
+    
+    // Создаем ProxyServer с автогенерированным ID
+    // Вместо создания ProxyServer создаем ProxyServerV2
+    let server = ProxyServerV2 {
+        id: uuid::Uuid::new_v4().to_string(),
+        name: update_data.name,
+        hostname: update_data.hostname,  // Исправлено: hostname вместо host
+        port: update_data.port,
+        protocol: match update_data.protocol.as_str() {
+            "HTTP" => ProxyProtocol::HTTP,
+            "HTTPS" => ProxyProtocol::HTTPS,
+            "SOCKS5" => ProxyProtocol::SOCKS5,
+            "VLESS" => ProxyProtocol::VLESS,
+            "VMess" => ProxyProtocol::VMess,
+            "Trojan" => ProxyProtocol::Trojan,
+            "Shadowsocks" => ProxyProtocol::Shadowsocks,
+            _ => ProxyProtocol::HTTP,
+        },
+        config: ProxyConfig::Http, // Временная заглушка, будет заменена в insert_server_v2
+        latency_ms: None,
+        last_ping: None,
+        active: update_data.active,
+        country: None,
+        city: None,
+        upload_speed: None,
+        download_speed: None,
+        subscription_id: None,
+    };
+
+    match db.insert_server_v2(&server).await { // Используем insert_server_v2
+        Ok(_) => Ok(HttpResponse::Ok().json(ApiResponse {
+            success: true,
+            data: Some("Server created successfully"),
+            error: None,
+        })),
+        Err(e) => Ok(HttpResponse::InternalServerError().json(ApiResponse::<()> {
+            success: false,
+            data: None,
+            error: Some(ApiError {
+                code: 500,
+                message: format!("Failed to create server: {}", e),
+            }),
+        })),
+    }
+}
+
+pub async fn update_server(
+    db: web::Data<Arc<Database>>,
+    path: web::Path<String>,
+    server_data: web::Json<UpdateProxyServer>,
+) -> Result<HttpResponse> {
+    let server_id = path.into_inner();
+    let update_data = server_data.into_inner();
+    
+    // Создаем полную структуру ProxyServer с ID из URL
+    let server = ProxyServer {
+        id: server_id,
+        name: update_data.name,
+        hostname: update_data.hostname,
+        port: update_data.port,
+        protocol: update_data.protocol,
+        latency_ms: update_data.latency_ms,
+        last_ping: update_data.last_ping,
+        active: update_data.active,
+    };
+
+    match db.update_server(&server).await {
+        Ok(_) => Ok(HttpResponse::Ok().json(ApiResponse {
+            success: true,
+            data: Some("Server updated successfully"),
+            error: None,
+        })),
+        Err(e) => Ok(HttpResponse::InternalServerError().json(ApiResponse::<()> {
+            success: false,
+            data: None,
+            error: Some(ApiError {
+                code: 500,
+                message: format!("Failed to update server: {}", e),
+            }),
+        })),
+    }
+}
+
+pub async fn delete_server(
+    db: web::Data<Arc<Database>>,
+    path: web::Path<String>,
+) -> Result<HttpResponse> {
+    let server_id = path.into_inner();
+
+    match db.delete_server(&server_id).await {
+        Ok(_) => Ok(HttpResponse::Ok().json(ApiResponse {
+            success: true,
+            data: Some("Server deleted successfully"),
+            error: None,
+        })),
+        Err(e) => Ok(HttpResponse::InternalServerError().json(ApiResponse::<()> {
+            success: false,
+            data: None,
+            error: Some(ApiError {
+                code: 500,
+                message: format!("Failed to delete server: {}", e),
             }),
         })),
     }

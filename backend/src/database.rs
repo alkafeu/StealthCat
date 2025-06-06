@@ -1,6 +1,9 @@
 use sqlx::{Pool, Sqlite, SqlitePool, Row};
 use anyhow::Result;
-use chrono::NaiveDateTime;
+// Удалите эту строку если она есть:
+// use crate::models::*;
+// Удаляем эту строку:
+// use chrono::NaiveDateTime;
 use crate::models::{LogEntry, ProxyServer, Rule, LogLevel};
 use crate::models::{Subscription, ProxyServerV2};
 
@@ -269,37 +272,58 @@ impl Database {
     
     // Методы для работы с ProxyServerV2
     pub async fn insert_server_v2(&self, server: &ProxyServerV2) -> Result<()> {
-        let protocol_str = match server.protocol {
-            crate::models::ProxyProtocol::HTTP => "HTTP",
-            crate::models::ProxyProtocol::HTTPS => "HTTPS",
-            crate::models::ProxyProtocol::SOCKS5 => "SOCKS5",
-            crate::models::ProxyProtocol::VLESS => "VLESS",
-            crate::models::ProxyProtocol::VMess => "VMess",
-            crate::models::ProxyProtocol::Trojan => "Trojan",
-            crate::models::ProxyProtocol::Shadowsocks => "Shadowsocks",
+        // Создаем базовую конфигурацию на основе протокола
+        let config = match server.protocol {
+            crate::models::ProxyProtocol::HTTP => crate::models::ProxyConfig::Http,
+            crate::models::ProxyProtocol::HTTPS => crate::models::ProxyConfig::Https,
+            crate::models::ProxyProtocol::SOCKS5 => crate::models::ProxyConfig::Socks5,
+            crate::models::ProxyProtocol::Shadowsocks => crate::models::ProxyConfig::Shadowsocks {
+                method: "aes-256-gcm".to_string(),
+                password: "default".to_string(),
+            },
+            crate::models::ProxyProtocol::Trojan => crate::models::ProxyConfig::Trojan {
+                password: "default".to_string(),
+            },
+            crate::models::ProxyProtocol::VLESS => crate::models::ProxyConfig::Vless(crate::models::VlessConfig {
+                uuid: "default-uuid".to_string(),
+                flow: None,
+                encryption: "none".to_string(),
+                network: "tcp".to_string(),
+                security: "tls".to_string(),
+                sni: None,
+                alpn: None,
+                fp: None,
+                pbk: None,
+                sid: None,
+                spx: None,
+            }),
+            crate::models::ProxyProtocol::VMess => crate::models::ProxyConfig::Vmess(crate::models::VmessConfig {
+                uuid: "default-uuid".to_string(),
+                alter_id: 0,
+                security: "auto".to_string(),
+                network: "tcp".to_string(),
+                tls: false,
+                sni: None,
+                alpn: None,
+            }),
         };
         
-        let config_json = serde_json::to_string(&server.config)?;
+        let config_json = serde_json::to_string(&config)?;
         
         sqlx::query(
             r#"
-            INSERT INTO servers_v2 (id, name, hostname, port, protocol, config, latency, last_check, active, country, city, upload_speed, download_speed)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            "#,
+            INSERT INTO servers_v2 (id, name, hostname, port, protocol, config, active, subscription_id, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+            "#
         )
         .bind(&server.id)
         .bind(&server.name)
         .bind(&server.hostname)
-        .bind(server.port as i32)
-        .bind(protocol_str)
-        .bind(&config_json)
-        .bind(server.latency_ms.map(|l| l as i32))
-        .bind(&server.last_ping)
+        .bind(server.port)
+        .bind(format!("{:?}", server.protocol))
+        .bind(config_json)
         .bind(server.active)
-        .bind(&server.country)
-        .bind(&server.city)
-        .bind(server.upload_speed.map(|s| s as i64))
-        .bind(server.download_speed.map(|s| s as i64))
+        .bind(&server.subscription_id)
         .execute(&self.pool)
         .await?;
         
@@ -428,6 +452,32 @@ impl Database {
     pub async fn delete_rule(&self, rule_id: &str) -> Result<()> { // Изменяем параметр на &str
         sqlx::query("DELETE FROM rules WHERE id = ?")
             .bind(rule_id)
+            .execute(&self.pool)
+            .await?;
+        
+        Ok(())
+    }
+
+    pub async fn update_server(&self, server: &ProxyServer) -> Result<()> {
+        sqlx::query(
+            "UPDATE servers_v2 SET name = ?, hostname = ?, port = ?, protocol = ?, latency = ?, active = ? WHERE id = ?"
+        )
+        .bind(&server.name)
+        .bind(&server.hostname)
+        .bind(server.port)
+        .bind(&server.protocol)
+        .bind(server.latency_ms.map(|l| l as i32))
+        .bind(server.active)
+        .bind(&server.id)
+        .execute(&self.pool)
+        .await?;
+        
+        Ok(())
+    }
+
+    pub async fn delete_server(&self, server_id: &str) -> Result<()> {
+        sqlx::query("DELETE FROM servers WHERE id = ?")
+            .bind(server_id)
             .execute(&self.pool)
             .await?;
         

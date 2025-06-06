@@ -660,3 +660,81 @@ pub async fn delete_server(
         })),
     }
 }
+
+// Импорт подписки по URL
+pub async fn import_subscription(
+    import_data: web::Json<ImportSubscriptionRequest>,
+    db: web::Data<Arc<Database>>,
+) -> Result<HttpResponse, actix_web::Error> {
+    let parser = SubscriptionParser::new();
+    
+    // Парсим подписку
+    match parser.fetch_subscription(&import_data.url).await {
+        Ok(servers) => {
+            if servers.is_empty() {
+                return Ok(HttpResponse::BadRequest().json(ApiResponse::<()> {
+                    success: false,
+                    data: None,
+                    error: Some(ApiError {
+                        code: 400,
+                        message: "No servers found in subscription".to_string(),
+                    }),
+                }));
+            }
+
+            // Создаем подписку
+            let subscription = Subscription {
+                id: uuid::Uuid::new_v4().to_string(),
+                name: import_data.name.clone().unwrap_or_else(|| "Imported Subscription".to_string()),
+                url: import_data.url.clone(),
+                update_interval: import_data.update_interval.unwrap_or(24),
+                last_update: Some(chrono::Utc::now()),
+                servers_count: servers.len() as u32,
+                active: true,
+                user_agent: Some("ClashforWindows/0.20.39".to_string()),
+            };
+
+            // Сохраняем подписку
+            match db.create_subscription(&subscription).await {
+                Ok(_) => {
+                    // Сохраняем серверы с привязкой к подписке
+                    match db.update_subscription_servers(&subscription.id, &servers).await {
+                        Ok(_) => Ok(HttpResponse::Ok().json(ApiResponse {
+                            success: true,
+                            data: Some(serde_json::json!({
+                                "subscription_id": subscription.id,
+                                "imported_servers": servers.len(),
+                                "subscription_name": subscription.name
+                            })),
+                            error: None,
+                        })),
+                        Err(e) => Ok(HttpResponse::InternalServerError().json(ApiResponse::<()> {
+                            success: false,
+                            data: None,
+                            error: Some(ApiError {
+                                code: 500,
+                                message: format!("Failed to save servers: {}", e),
+                            }),
+                        })),
+                    }
+                },
+                Err(e) => Ok(HttpResponse::InternalServerError().json(ApiResponse::<()> {
+                    success: false,
+                    data: None,
+                    error: Some(ApiError {
+                        code: 500,
+                        message: format!("Failed to create subscription: {}", e),
+                    }),
+                })),
+            }
+        },
+        Err(e) => Ok(HttpResponse::BadRequest().json(ApiResponse::<()> {
+            success: false,
+            data: None,
+            error: Some(ApiError {
+                code: 400,
+                message: format!("Failed to parse subscription: {}", e),
+            }),
+        })),
+    }
+}

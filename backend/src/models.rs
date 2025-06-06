@@ -286,3 +286,10 @@ pub struct UpdateProxyServerV2 {
     pub download_speed: Option<u64>,
     pub subscription_id: Option<String>,
 }
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ImportSubscriptionRequest {
+    pub url: String,
+    pub name: Option<String>,
+    pub update_interval: Option<u32>, // в часах
+}

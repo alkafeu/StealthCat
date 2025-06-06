@@ -68,6 +68,7 @@ async fn main() -> Result<()> {
                     // Новые маршруты для подписок
                     .route("/subscriptions", web::get().to(api::get_subscriptions))
                     .route("/subscriptions", web::post().to(api::create_subscription))
+                    .route("/subscriptions/import", web::post().to(api::import_subscription))
                     .route("/subscriptions/{id}", web::get().to(api::get_subscription))
                     .route("/subscriptions/{id}", web::put().to(api::update_subscription))
                     .route("/subscriptions/{id}", web::delete().to(api::delete_subscription))
